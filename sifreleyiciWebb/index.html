@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Şifreleyici | Matrix Arkaplan</title>
   <style>
-    /* Tam ekran canvas ve sayfa */
     html, body {
       margin: 0; padding: 0;
       height: 100%;
@@ -15,7 +14,6 @@
       position: relative;
     }
 
-    /* Canvas arka plan */
     #matrix {
       position: fixed;
       top: 0; left: 0;
@@ -24,7 +22,6 @@
       z-index: 0;
     }
 
-    /* Sayfa içeriği önde */
     .content {
       position: relative;
       z-index: 1;
@@ -83,42 +80,33 @@
 </div>
 
 <script>
-  // Matrix efekt kodu
+  // Matrix efekt
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
-
   let width = canvas.width = window.innerWidth;
   let height = canvas.height = window.innerHeight;
 
   const columns = Math.floor(width / 20);
   const drops = [];
-
-  for (let i = 0; i < columns; i++) {
-    drops[i] = Math.random() * height;
-  }
+  for (let i = 0; i < columns; i++) drops[i] = Math.random() * height;
 
   function draw() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Silik siyah
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.fillRect(0, 0, width, height);
-
-    ctx.fillStyle = '#0F0'; // yeşil
+    ctx.fillStyle = '#0F0';
     ctx.font = '20px monospace';
 
     for (let i = 0; i < drops.length; i++) {
-      const text = Math.round(Math.random()); // 0 veya 1
+      const text = Math.round(Math.random());
       ctx.fillText(text, i * 20, drops[i] * 20);
-
       drops[i] += 0.7;
-
-      if (drops[i] * 20 > height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
+      if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
     }
   }
 
   setInterval(draw, 40);
 
-  // Şifreleyici kod
+  // Şifreleme/çözme kodları
   const alfabe = ['a','b','c','ç','d','e','f','g','ğ','h','ı','i','j','k','l','m','n','o','ö','p','r','s','ş','t','u','ü','v','y','z'];
 
   function sifrele() {
@@ -130,9 +118,7 @@
       let sayilar = [];
       for (let harf of kelime) {
         const index = alfabe.indexOf(harf);
-        if (index !== -1) {
-          sayilar.push(index + 1);
-        }
+        if (index !== -1) sayilar.push(index + 1);
       }
       sonuc.push(sayilar.join("."));
     });
@@ -150,9 +136,7 @@
       const sayilar = kelime.split(".");
       sayilar.forEach(sayi => {
         const index = parseInt(sayi) - 1;
-        if (index >= 0 && index < alfabe.length) {
-          harfler.push(alfabe[index]);
-        }
+        if (index >= 0 && index < alfabe.length) harfler.push(alfabe[index]);
       });
       sonuc.push(harfler.join(""));
     });
