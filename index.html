@@ -1,165 +1,108 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Şifreleyici | Matrix Arkaplan</title>
+  <meta charset="UTF-8">
+  <title>Türkçe Harf-Sayı Şifreleyici</title>
   <style>
-    /* Tam ekran canvas ve sayfa */
-    html, body {
-      margin: 0; padding: 0;
-      height: 100%;
-      overflow: hidden;
-      background: black;
+    body {
       font-family: Arial, sans-serif;
-      color: white;
-      position: relative;
+      background-color: #0d0d0d;
+      color: #00ff00;
+      text-align: center;
+      padding: 30px;
     }
-
-    /* Canvas arka plan */
-    #matrix {
+    input, textarea, button {
+      margin: 10px;
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+    }
+    .matrix-bg {
       position: fixed;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
+      width: 100%; height: 100%;
+      background: black;
+      z-index: -1;
+      overflow: hidden;
     }
-
-    /* Sayfa içeriği önde */
-    .content {
-      position: relative;
-      z-index: 1;
-      padding: 40px;
-      text-align: center;
-      background: rgba(0,0,0,0.6);
-      min-height: 100vh;
-    }
-
-    textarea {
-      width: 300px;
-      height: 100px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: none;
-      padding: 10px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 10px;
-      cursor: pointer;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-
-    #sonuc {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #0f0;
-      white-space: pre-wrap;
-      font-family: monospace;
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
+  <h1>🔐 Harf ↔ Sayı Şifreleyici</h1>
+  <textarea id="input" rows="3" placeholder="Metin ya da kod yaz..."></textarea><br>
+  <button onclick="sifrele()">Harf → Sayı</button>
+  <button onclick="coz()">Sayı → Harf</button>
+  <h2>Sonuç:</h2>
+  <textarea id="output" rows="3" readonly></textarea>
 
-<canvas id="matrix"></canvas>
+  <div class="matrix-bg">
+    <canvas id="matrix"></canvas>
+  </div>
 
-<div class="content">
-  <h1>🔐 Harf <--> Sayı Şifreleyici</h1>
+  <script>
+    const alfabe = [
+      'a','b','c','ç','d','e','f','g','ğ',
+      'h','ı','i','j','k','l','m','n','o',
+      'ö','p','r','s','ş','t','u','ü','v',
+      'y','z','q','w','x'
+    ];
 
-  <textarea id="girdi" placeholder="Buraya metin yaz..."></textarea><br>
-  <button onclick="sifrele()">Şifrele</button>
-  <button onclick="coz()">Çöz</button>
+    function sifrele() {
+      const metin = document.getElementById("input").value.toLowerCase();
+      const kelimeler = metin.split(" ");
+      const sonuc = kelimeler.map(kelime =>
+        kelime.split("").map(harf => {
+          const index = alfabe.indexOf(harf);
+          return index !== -1 ? index + 1 : "";
+        }).filter(x => x !== "").join(".")
+      ).join(",");
+      document.getElementById("output").value = sonuc;
+    }
 
-  <div id="sonuc"></div>
-</div>
+    function coz() {
+      const kod = document.getElementById("input").value;
+      const kelimeler = kod.split(",");
+      const sonuc = kelimeler.map(kelimeKod =>
+        kelimeKod.split(".").map(sayi => {
+          const index = parseInt(sayi) - 1;
+          return alfabe[index] || "";
+        }).join("")
+      ).join(" ");
+      document.getElementById("output").value = sonuc;
+    }
 
-<script>
-  // Matrix efekt kodu
-  const canvas = document.getElementById('matrix');
-  const ctx = canvas.getContext('2d');
+    // Matrix Animasyonu
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
 
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
+    const letters = "01";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
 
-  const columns = Math.floor(width / 20);
-  const drops = [];
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let i = 0; i < columns; i++) {
-    drops[i] = Math.random() * height;
-  }
+      ctx.fillStyle = "#0f0";
+      ctx.font = fontSize + "px monospace";
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-  function draw() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // Silik siyah
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.fillStyle = '#0F0'; // yeşil
-    ctx.font = '20px monospace';
-
-    for (let i = 0; i < drops.length; i++) {
-      const text = Math.round(Math.random()); // 0 veya 1
-      ctx.fillText(text, i * 20, drops[i] * 20);
-
-      drops[i] += 0.7;
-
-      if (drops[i] * 20 > height && Math.random() > 0.975) {
-        drops[i] = 0;
+        if (drops[i] * fontSize > canvas.height || Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
       }
     }
-  }
 
-  setInterval(draw, 40);
-
-  // Şifreleyici kod
-  const alfabe = ['a','b','c','ç','d','e','f','g','ğ','h','ı','i','j','k','l','m','n','o','ö','p','r','s','ş','t','u','ü','v','y','z'];
-
-  function sifrele() {
-    const metin = document.getElementById("girdi").value.toLowerCase();
-    const kelimeler = metin.split(" ");
-    let sonuc = [];
-
-    kelimeler.forEach(kelime => {
-      let sayilar = [];
-      for (let harf of kelime) {
-        const index = alfabe.indexOf(harf);
-        if (index !== -1) {
-          sayilar.push(index + 1);
-        }
-      }
-      sonuc.push(sayilar.join("."));
-    });
-
-    document.getElementById("sonuc").innerText = "Şifreli: " + sonuc.join(",");
-  }
-
-  function coz() {
-    const kod = document.getElementById("girdi").value;
-    const kelimeler = kod.split(",");
-    let sonuc = [];
-
-    kelimeler.forEach(kelime => {
-      let harfler = [];
-      const sayilar = kelime.split(".");
-      sayilar.forEach(sayi => {
-        const index = parseInt(sayi) - 1;
-        if (index >= 0 && index < alfabe.length) {
-          harfler.push(alfabe[index]);
-        }
-      });
-      sonuc.push(harfler.join(""));
-    });
-
-    document.getElementById("sonuc").innerText = "Çözüm: " + sonuc.join(" ");
-  }
-</script>
-
+    setInterval(drawMatrix, 50);
+  </script>
 </body>
 </html>
