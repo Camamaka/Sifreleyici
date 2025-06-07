@@ -1,50 +1,108 @@
-ozel_alfabe = [
-    'a', 'b', 'c', 'ç', 'd', 'e', 'f', 'g', 'ğ',
-    'h', 'ı', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-    'ö', 'p', 'r', 's', 'ş', 't', 'u', 'ü', 'v',
-    'y', 'z', 'q', 'w', 'x'
-]
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Türkçe Harf-Sayı Şifreleyici</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0d0d0d;
+      color: #00ff00;
+      text-align: center;
+      padding: 30px;
+    }
+    input, textarea, button {
+      margin: 10px;
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+    }
+    .matrix-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      z-index: -1;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Harf ↔ Sayı Şifreleyici</h1>
+  <textarea id="input" rows="3" placeholder="Metin ya da kod yaz..."></textarea><br>
+  <button onclick="sifrele()">Harf → Sayı</button>
+  <button onclick="coz()">Sayı → Harf</button>
+  <h2>Sonuç:</h2>
+  <textarea id="output" rows="3" readonly></textarea>
 
-def harfleri_sayiya_cevir(metin):
-    metin = metin.lower()
-    kelimeler = metin.split()
-    sifreli_kelimeler = []
+  <div class="matrix-bg">
+    <canvas id="matrix"></canvas>
+  </div>
 
-    for kelime in kelimeler:
-        sayilar = []
-        for harf in kelime:
-            if harf in ozel_alfabe:
-                sayi = ozel_alfabe.index(harf) + 1
-                sayilar.append(str(sayi))
-        sifreli_kelimeler.append(".".join(sayilar))
+  <script>
+    const alfabe = [
+      'a','b','c','ç','d','e','f','g','ğ',
+      'h','ı','i','j','k','l','m','n','o',
+      'ö','p','r','s','ş','t','u','ü','v',
+      'y','z','q','w','x'
+    ];
 
-    return ",".join(sifreli_kelimeler)
+    function sifrele() {
+      const metin = document.getElementById("input").value.toLowerCase();
+      const kelimeler = metin.split(" ");
+      const sonuc = kelimeler.map(kelime =>
+        kelime.split("").map(harf => {
+          const index = alfabe.indexOf(harf);
+          return index !== -1 ? index + 1 : "";
+        }).filter(x => x !== "").join(".")
+      ).join(",");
+      document.getElementById("output").value = sonuc;
+    }
 
-def sayilari_harfe_cevir(kod):
-    kelimeler = kod.split(",")
-    cozulmus_kelimeler = []
+    function coz() {
+      const kod = document.getElementById("input").value;
+      const kelimeler = kod.split(",");
+      const sonuc = kelimeler.map(kelimeKod =>
+        kelimeKod.split(".").map(sayi => {
+          const index = parseInt(sayi) - 1;
+          return alfabe[index] || "";
+        }).join("")
+      ).join(" ");
+      document.getElementById("output").value = sonuc;
+    }
 
-    for kelime_kodu in kelimeler:
-        harfler = []
-        sayilar = kelime_kodu.split(".")
-        for sayi in sayilar:
-            if sayi.isdigit():
-                index = int(sayi) - 1
-                if 0 <= index < len(ozel_alfabe):
-                    harfler.append(ozel_alfabe[index])
-        cozulmus_kelimeler.append("".join(harfler))
+    // Matrix Animasyonu
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
 
-    return " ".join(cozulmus_kelimeler)
+    const letters = "01";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
 
-# Kullanıcı Arayüzü
-print("🔢 Harf <--> Sayı Şifreleyici (Genişletilmiş Alfabe)")
-secim = input("1 - Şifrele (Harf → Sayı)\n2 - Çöz (Sayı → Harf)\nSeçim: ")
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-if secim == "1":
-    metin = input("Şifrelenecek metni yaz: ")
-    print("Şifreli hali:", harfleri_sayiya_cevir(metin))
-elif secim == "2":
-    kod = input("Çözülecek kodu yaz: ")
-    print("Çözülmüş hali:", sayilari_harfe_cevir(kod))
-else:
-    print("Geçersiz seçim, lütfen 1 ya da 2 gir.")
+      ctx.fillStyle = "#0f0";
+      ctx.font = fontSize + "px monospace";
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height || Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 50);
+  </script>
+</body>
+</html>
